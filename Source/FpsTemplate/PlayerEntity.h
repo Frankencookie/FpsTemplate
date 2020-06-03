@@ -35,7 +35,7 @@ protected:
 
 	UCameraComponent* MainCamera;
 
-	//FVector WeaponOffsetTarget = FVector(0, 0, 0);
+	//Smooth Position blend
 	FVector WeaponOffsetBlend = FVector(0, 0, 0);
 	FVector WeaponOffsetFinal = FVector(0, 0, 0);
 	float AnimTime = 0;
@@ -45,6 +45,11 @@ protected:
 
 	float HorizontalOffsetMultiplier = 2;
 
+	//Recoil
+	FVector RecoilClimbTarget = FVector(0, 0, 0);
+	FRotator RecoilRotationTarget = FRotator(0, 0, 0);
+
+	//Smooth Rotation
 	FRotator RotationOffset = FRotator(0, 0, 0);
 	float RotInterpSpeed = 5;
 	float RotMultiplier = 3;

@@ -7,6 +7,7 @@
 #include "Engine/StaticMesh.h"
 #include "Curves/CurveVector.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Sound/SoundBase.h"
 #include "WeaponData.generated.h"
 
 
@@ -16,7 +17,7 @@ enum EAmmoType
 	A_NONE		UMETA(DisplayName = "NONE"),
 	A_9MM		UMETA(DisplayName = "9mm"),
 	A_45ACP		UMETA(DisplayName = ".45 acp"),
-	A_WIN308	UMETA(DisplayName = ".308 Winchester"),
+	A_303		UMETA(DisplayName = ".303"),
 
 	A_LENGTH
 };
@@ -76,10 +77,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UCurveVector* IdleSwayCurve;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Particle Systems")
 		UParticleSystem* ShellEjectParticle;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Particle Systems")
 		UParticleSystem* MuzzleFlashParticle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		USoundBase* GunshotSound;
 	
 };

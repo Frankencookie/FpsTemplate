@@ -7,6 +7,7 @@
 #include "WeaponData.h"
 #include "Components/StaticMeshComponent.h"
 #include "FpsGameInstance.h"
+#include "Components/AudioComponent.h"
 #include "GameEntity.generated.h"
 
 UCLASS()
@@ -63,6 +64,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UParticleSystemComponent* MuzzleParticleBoi;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAudioComponent* AudioSource;
 
 	void DamageEntity(int amount);
 };

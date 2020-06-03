@@ -14,13 +14,20 @@ AGameEntity::AGameEntity()
 	ViewModel->SetupAttachment(RootComponent);
 	ViewModel->bCastDynamicShadow = false;
 
+	//Shell eject particle system
 	ShellParticleBoi = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Shell Eject Particle System"));
 	ShellParticleBoi->SetupAttachment(ViewModel);
 	ShellParticleBoi->bAutoActivate = false;
 
+	//Muzzle flash particle system
 	MuzzleParticleBoi = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Muzzle Flash Particle System"));
 	MuzzleParticleBoi->SetupAttachment(ViewModel);
 	MuzzleParticleBoi->bAutoActivate = false;
+
+	//Sound source
+	AudioSource = CreateDefaultSubobject<UAudioComponent>("Audio Source");
+	AudioSource->SetupAttachment(ViewModel);
+	AudioSource->bAutoActivate = false;
 }
 
 // Called when the game starts or when spawned
@@ -67,6 +74,9 @@ void AGameEntity::PostInitializeComponents()
 				GLog->Log("Muzzle Socket Found");
 			}
 		}
+
+		//Audio
+		AudioSource->SetSound(CurrentWeaponInfo->GunshotSound);
 		
 	}
 
@@ -129,6 +139,8 @@ void AGameEntity::PlayEffects()
 		MuzzleParticleBoi->ResetParticles();
 		MuzzleParticleBoi->Activate();
 	}
+
+	AudioSource->Play();
 }
 
 // Called every frame

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "GameEntity.h"
-
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 AGameEntity::AGameEntity()
@@ -13,8 +13,10 @@ AGameEntity::AGameEntity()
 	//ViewModel->AddRelativeLocation(FVector(26, 15, 60));
 	ViewModel->SetupAttachment(RootComponent);
 	ViewModel->bCastDynamicShadow = false;
-	//ViewModel->SetRenderCustomDepth(true);
-	//ViewModel->SetCustomDepthStencilValue(255);
+
+	ShellParticleBoi = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Shell Eject Particle System"));
+	ShellParticleBoi->SetupAttachment(ViewModel);
+	ShellParticleBoi->bAutoActivate = false;
 }
 
 // Called when the game starts or when spawned
@@ -32,8 +34,25 @@ void AGameEntity::PostInitializeComponents()
 	{
 		CurrentWeaponInfo = CurrentWeapon.GetDefaultObject();
 
-		ViewModel->SetStaticMesh(CurrentWeaponInfo->ViewModel);
+		ViewModel->SetStaticMesh(CurrentWeaponInfo->WeaponModel);
 		ViewModel->SetRelativeLocation(CurrentWeaponInfo->WeaponOffset);
+
+		//Weapon Data Set
+		WeaponInventory[CurrentWeaponInfo->WeaponType] = true;
+		Magazine[CurrentWeaponInfo->WeaponType] = CurrentWeaponInfo->MagSize;
+		
+		if (CurrentWeaponInfo->ShellEjectParticle)
+		{
+			if (ViewModel->DoesSocketExist("ShellParticle"))
+			{
+				ShellParticleBoi->SetTemplate(CurrentWeaponInfo->ShellEjectParticle);
+				ShellParticleBoi->SetWorldLocation(ViewModel->GetSocketLocation("ShellParticle"));
+				ShellParticleBoi->SetWorldRotation(ViewModel->GetSocketRotation("ShellParticle"));
+				ShellParticleBoi->SetActive(false);
+				GLog->Log("Socket Found");
+			}
+		}
+		
 	}
 
 
@@ -41,7 +60,56 @@ void AGameEntity::PostInitializeComponents()
 
 void AGameEntity::Shoot()
 {
+	if (Magazine[CurrentWeaponInfo->WeaponType] > 0)
+	{
+		ShootRaycast();
+		PlayEffects();
+		Magazine[CurrentWeaponInfo->WeaponType] = Magazine[CurrentWeaponInfo->WeaponType] - 1;
+	}
 
+}
+
+void AGameEntity::UnShoot()
+{
+}
+
+void AGameEntity::ShootRaycast()
+{
+	//Set up Variables
+	FHitResult hitBoi;
+	FCollisionQueryParams CollisionParameters;
+	FVector Start = ViewModel->GetSocketLocation("Muzzle");
+	FVector End = ((ViewModel->GetForwardVector() * CurrentWeaponInfo->Range) + Start);
+
+	//DebugLine
+	//DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 5, 0, 1);
+
+	
+	GLog->Log("Weapon Fired");
+
+	//Perform Raycast
+	if (GetWorld()->LineTraceSingleByChannel(hitBoi, Start, End, ECC_WorldDynamic, CollisionParameters))
+	{
+		GLog->Log("Hit Something");
+
+		//Test if it is an entity
+		AGameEntity* EntityHit = Cast<AGameEntity>(hitBoi.Actor);
+		if (EntityHit)
+		{
+			GLog->Log("Hit Entity");
+			EntityHit->DamageEntity(100);
+		}
+	}
+}
+
+void AGameEntity::PlayEffects()
+{
+	if (CurrentWeaponInfo->ShellEjectParticle && ViewModel->DoesSocketExist("ShellParticle"))
+	{
+		ShellParticleBoi->ResetParticles();
+		ShellParticleBoi->Activate();
+		GLog->Log("Particle Spawned");
+	}
 }
 
 // Called every frame
@@ -54,4 +122,13 @@ void AGameEntity::Tick(float DeltaTime)
 void AGameEntity::PickupAmmo(EAmmoType AmmoType, int Amount)
 {
 	AmmoPool[AmmoType] += Amount;
+}
+
+void AGameEntity::DamageEntity(int amount)
+{
+	health -= amount;
+	if (health < 1)
+	{
+		Destroy();
+	}
 }

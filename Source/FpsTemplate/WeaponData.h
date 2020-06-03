@@ -6,6 +6,7 @@
 #include "UObject/NoExportTypes.h"
 #include "Engine/StaticMesh.h"
 #include "Curves/CurveVector.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "WeaponData.generated.h"
 
 
@@ -64,12 +65,21 @@ public:
 
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UStaticMesh* ViewModel;
+		UStaticMesh* WeaponModel;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector WeaponOffset = FVector(26, 15, -5);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Range = 6000;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UCurveVector* IdleSwayCurve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UParticleSystem* ShellEjectParticle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UParticleSystem* MuzzleFlashParticle;
 	
 };

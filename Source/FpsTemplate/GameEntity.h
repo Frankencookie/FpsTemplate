@@ -26,12 +26,23 @@ protected:
 	UWeaponData* CurrentWeaponInstance;
 
 	UFpsGameInstance* InstanceBoi;
+
+
 	virtual void Shoot();
+	virtual void UnShoot();
+	virtual void ShootRaycast();
+	virtual void PlayEffects();
 
 	bool Aiming = false;
 
 	int AmmoPool[A_LENGTH];
+	int Magazine[W_LENGTH];
 	bool WeaponInventory[W_LENGTH];
+
+
+	//Stats
+	int health = 100;
+
 
 public:	
 	// Called every frame
@@ -47,5 +58,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* ViewModel;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UParticleSystemComponent* ShellParticleBoi;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UParticleSystemComponent* MuzzleParticleBoi;
+
+	void DamageEntity(int amount);
 };

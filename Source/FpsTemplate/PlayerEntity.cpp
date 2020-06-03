@@ -29,7 +29,12 @@ void APlayerEntity::MoveRight(float value)
 
 void APlayerEntity::Shoot()
 {
-
+	if (Magazine[CurrentWeaponInfo->WeaponType] > 0)
+	{
+		ShootRaycast();
+		PlayEffects();
+		Magazine[CurrentWeaponInfo->WeaponType] = Magazine[CurrentWeaponInfo->WeaponType] - 1;
+	}
 }
 
 void APlayerEntity::ADS()
@@ -65,6 +70,13 @@ void APlayerEntity::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	float WalkDropValue = -GetVelocity().GetAbs().Size() / 50;
+
+	//Dont do anything if data has not been assigned
+	if (!CurrentWeapon)
+	{
+		GLog->Log(ELogVerbosity::Error, "NO DATA");
+		return;
+	}
 
 	//Throw an error if Curve has not been set
 	if (CurrentWeaponInfo->IdleSwayCurve == NULL)
@@ -118,7 +130,6 @@ void APlayerEntity::Tick(float DeltaTime)
 	WeaponOffsetFinal += SwayValue * (SwayBase + -WalkDropValue / SwayMultiplier);
 
 	//Recoil
-
 
 	//Set Position
 	ViewModel->SetRelativeLocation(WeaponOffsetFinal);

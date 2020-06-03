@@ -17,6 +17,10 @@ AGameEntity::AGameEntity()
 	ShellParticleBoi = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Shell Eject Particle System"));
 	ShellParticleBoi->SetupAttachment(ViewModel);
 	ShellParticleBoi->bAutoActivate = false;
+
+	MuzzleParticleBoi = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Muzzle Flash Particle System"));
+	MuzzleParticleBoi->SetupAttachment(ViewModel);
+	MuzzleParticleBoi->bAutoActivate = false;
 }
 
 // Called when the game starts or when spawned
@@ -49,7 +53,18 @@ void AGameEntity::PostInitializeComponents()
 				ShellParticleBoi->SetWorldLocation(ViewModel->GetSocketLocation("ShellParticle"));
 				ShellParticleBoi->SetWorldRotation(ViewModel->GetSocketRotation("ShellParticle"));
 				ShellParticleBoi->SetActive(false);
-				GLog->Log("Socket Found");
+				GLog->Log("Shell Socket Found");
+			}
+		}
+		if (CurrentWeaponInfo->MuzzleFlashParticle)
+		{
+			if (ViewModel->DoesSocketExist("Muzzle"))
+			{
+				MuzzleParticleBoi->SetTemplate(CurrentWeaponInfo->MuzzleFlashParticle);
+				MuzzleParticleBoi->SetWorldLocation(ViewModel->GetSocketLocation("Muzzle"));
+				MuzzleParticleBoi->SetWorldRotation(ViewModel->GetSocketRotation("Muzzle"));
+				MuzzleParticleBoi->SetActive(false);
+				GLog->Log("Muzzle Socket Found");
 			}
 		}
 		
@@ -108,7 +123,11 @@ void AGameEntity::PlayEffects()
 	{
 		ShellParticleBoi->ResetParticles();
 		ShellParticleBoi->Activate();
-		GLog->Log("Particle Spawned");
+	}
+	if (CurrentWeaponInfo->MuzzleFlashParticle && ViewModel->DoesSocketExist("Muzzle"))
+	{
+		MuzzleParticleBoi->ResetParticles();
+		MuzzleParticleBoi->Activate();
 	}
 }
 

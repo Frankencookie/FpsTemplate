@@ -47,6 +47,7 @@ void APlayerEntity::ADS()
 	SwayMultiplier = 10;
 	RotMultiplier = 1;
 	LookSensitivity = AdsSensitivity;
+	RecoilMultiplier = 1;
 }
 
 void APlayerEntity::UnADS()
@@ -56,6 +57,7 @@ void APlayerEntity::UnADS()
 	SwayMultiplier = 3;
 	RotMultiplier = 3;
 	LookSensitivity = 1;
+	RecoilMultiplier = 3;
 }
 
 void APlayerEntity::LookUp(float Value)
@@ -140,11 +142,14 @@ void APlayerEntity::Tick(float DeltaTime)
 	WeaponOffsetFinal = CurrentWeaponInfo->WeaponOffset;
 	WeaponOffsetBlend = FMath::VInterpTo(WeaponOffsetBlend, WeaponOffsetTarget, DeltaTime, OffsetSpeed);
 
-	//Final Offset Value Addition
+	//Offset Value Addition
 	WeaponOffsetFinal = WeaponOffsetBlend;
 	WeaponOffsetFinal += SwayValue * (SwayBase + -WalkDropValue / SwayMultiplier);
 
-	//Recoil
+	//Blend X axis recoil
+	RecoilXTarget = FMath::VInterpTo(RecoilXTarget, FVector(0, 0, 0), DeltaTime, RecoilSpeed);
+	//Add to OffsetValue
+	WeaponOffsetFinal += RecoilXTarget;
 
 	//Set Position
 	ViewModel->SetRelativeLocation(WeaponOffsetFinal);
@@ -154,6 +159,13 @@ void APlayerEntity::Tick(float DeltaTime)
 	RotationOffsetTarget.Pitch = -GetInputAxisValue("LookUp") * RotMultiplier;
 	RotationOffsetTarget.Yaw = GetInputAxisValue("LookRight") * RotMultiplier;
 	RotationOffset = FMath::RInterpTo(RotationOffset, RotationOffsetTarget, DeltaTime, RotInterpSpeed);
+
+	//Recoil Rotation
+	RecoilRotationTarget = FMath::RInterpTo(RecoilRotationTarget, FRotator(0, 0, 0), DeltaTime, RecoilSpeed);
+	FRotator RecoilRotBlend = FRotator(0, 0, 0);
+	RecoilRotBlend = FMath::RInterpTo(RecoilRotBlend, RecoilRotationTarget, DeltaTime, RecoilSpeed);
+
+	RotationOffset += RecoilRotBlend;
 
 	ViewModel->SetRelativeRotation(RotationOffset);
 }

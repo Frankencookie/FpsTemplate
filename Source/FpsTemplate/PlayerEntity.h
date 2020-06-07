@@ -48,8 +48,9 @@ protected:
 	float HorizontalOffsetMultiplier = 2;
 
 	//Recoil
-	FVector RecoilClimbTarget = FVector(0, 0, 0);
-	FRotator RecoilRotationTarget = FRotator(0, 0, 0);
+	//FVector RecoilClimbTarget = FVector(0, 0, 0);
+	//FRotator RecoilRotationTarget = FRotator(0, 0, 0);
+	float RecoilSpeed = 15;
 
 	//Smooth Rotation
 	FRotator RotationOffset = FRotator(0, 0, 0);

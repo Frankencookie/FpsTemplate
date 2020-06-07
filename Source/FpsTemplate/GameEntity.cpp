@@ -105,6 +105,14 @@ void AGameEntity::Fire()
 		ShootRaycast();
 		PlayEffects();
 		Magazine[CurrentWeaponInfo->WeaponType] = Magazine[CurrentWeaponInfo->WeaponType] - 1;
+		float RecoilUP = FMath::FRandRange(CurrentWeaponInfo->VerticalRecoil / 2, CurrentWeaponInfo->VerticalRecoil) * RecoilMultiplier;
+		float RecoilSIDE = FMath::FRandRange(-CurrentWeaponInfo->HorizontalRecoil, CurrentWeaponInfo->HorizontalRecoil) * RecoilMultiplier;
+		RecoilRotationTarget += FRotator(RecoilUP, RecoilSIDE, 0);
+
+		RecoilXTarget += FVector(-CurrentWeaponInfo->BackRecoil, 0, 0);
+
+		//Camera Shake
+		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(CurrentWeaponInfo->CameraShake, 1.0f);
 	}
 }
 

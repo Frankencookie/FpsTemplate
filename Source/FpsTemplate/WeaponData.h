@@ -8,6 +8,7 @@
 #include "Curves/CurveVector.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundBase.h"
+#include "Camera/CameraShake.h"
 #include "WeaponData.generated.h"
 
 
@@ -78,6 +79,19 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float Range = 6000;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recoil")
+		float HorizontalRecoil;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recoil")
+		float VerticalRecoil;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recoil")
+		float BackRecoil;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recoil")
+		TSubclassOf<UCameraShake> CameraShake;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UCurveVector* IdleSwayCurve;

@@ -37,6 +37,9 @@ protected:
 	bool Firing = false;
 	float NextShotTime = 0;
 	float CurrentShotTime = 0;
+	FRotator RecoilRotationTarget = FRotator(0, 0, 0);
+	FVector RecoilXTarget = FVector(0, 0, 0);
+	float RecoilMultiplier = 3;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float LookSensitivity = 1;

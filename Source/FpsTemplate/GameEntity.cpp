@@ -85,17 +85,27 @@ void AGameEntity::PostInitializeComponents()
 
 void AGameEntity::Shoot()
 {
-	if (Magazine[CurrentWeaponInfo->WeaponType] > 0)
+	Firing = true;
+	if (!CurrentWeaponInfo->Auto)
 	{
-		ShootRaycast();
-		PlayEffects();
-		Magazine[CurrentWeaponInfo->WeaponType] = Magazine[CurrentWeaponInfo->WeaponType] - 1;
+		Fire();
 	}
 
 }
 
 void AGameEntity::UnShoot()
 {
+	Firing = false;
+}
+
+void AGameEntity::Fire()
+{
+	if (Magazine[CurrentWeaponInfo->WeaponType] > 0)
+	{
+		ShootRaycast();
+		PlayEffects();
+		Magazine[CurrentWeaponInfo->WeaponType] = Magazine[CurrentWeaponInfo->WeaponType] - 1;
+	}
 }
 
 void AGameEntity::ShootRaycast()
@@ -143,11 +153,29 @@ void AGameEntity::PlayEffects()
 	AudioSource->Play();
 }
 
+
+void AGameEntity::StartCrouch()
+{
+	Crouch();
+}
+
+void AGameEntity::EndCrouch()
+{
+	UnCrouch();
+}
+
 // Called every frame
 void AGameEntity::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	CurrentShotTime += DeltaTime;
+
+	if (Firing && CurrentWeaponInfo->Auto && CurrentShotTime > NextShotTime)
+	{
+		Fire();
+		NextShotTime = CurrentShotTime + CurrentWeaponInfo->Cooldown;
+	}
 }
 
 void AGameEntity::PickupAmmo(EAmmoType AmmoType, int Amount)

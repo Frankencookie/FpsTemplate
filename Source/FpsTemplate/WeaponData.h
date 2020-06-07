@@ -17,7 +17,7 @@ enum EAmmoType
 	A_NONE		UMETA(DisplayName = "NONE"),
 	A_9MM		UMETA(DisplayName = "9mm"),
 	A_45ACP		UMETA(DisplayName = ".45 acp"),
-	A_303		UMETA(DisplayName = ".303"),
+	A_303		UMETA(DisplayName = ".303 British"),
 
 	A_LENGTH
 };
@@ -64,6 +64,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int MagSize;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		bool Auto = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Cooldown;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UStaticMesh* WeaponModel;

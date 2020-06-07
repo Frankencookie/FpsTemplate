@@ -29,12 +29,19 @@ protected:
 	UFpsGameInstance* InstanceBoi;
 
 
-	virtual void Shoot();
-	virtual void UnShoot();
 	virtual void ShootRaycast();
 	virtual void PlayEffects();
+	virtual void Fire();
 
 	bool Aiming = false;
+	bool Firing = false;
+	float NextShotTime = 0;
+	float CurrentShotTime = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float LookSensitivity = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float AdsSensitivity = 0.5f;
 
 	int AmmoPool[A_LENGTH];
 	int Magazine[W_LENGTH];
@@ -48,6 +55,11 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	virtual void StartCrouch();
+	virtual void EndCrouch();
+	virtual void Shoot();
+	virtual void UnShoot();
 
 	virtual void PickupAmmo(EAmmoType AmmoType, int Amount);
 

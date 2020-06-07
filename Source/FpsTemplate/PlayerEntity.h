@@ -25,9 +25,11 @@ protected:
 	void MoveForward(float value);
 	void MoveRight(float value);
 
-	virtual void Shoot() override;
+	//virtual void Shoot() override;
 	void ADS();
 	void UnADS();
+	void LookUp(float Value);
+	void LookRight(float Value);
 
 	void SwapWeaponUp();
 	void SwapWeaponDown();

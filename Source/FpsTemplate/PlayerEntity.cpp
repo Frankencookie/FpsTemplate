@@ -10,6 +10,7 @@ APlayerEntity::APlayerEntity()
 	MainCamera->bUsePawnControlRotation = true;
 
 	ViewModel->SetupAttachment(MainCamera);
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 
 	//MovementBoi = GetCharacterMovement();
 	//MovementBoi->MaxAcceleration = 4096;
@@ -27,6 +28,7 @@ void APlayerEntity::MoveRight(float value)
 	AddMovementInput(GetActorRightVector(), value);
 }
 
+/*
 void APlayerEntity::Shoot()
 {
 	if (Magazine[CurrentWeaponInfo->WeaponType] > 0)
@@ -36,15 +38,34 @@ void APlayerEntity::Shoot()
 		Magazine[CurrentWeaponInfo->WeaponType] = Magazine[CurrentWeaponInfo->WeaponType] - 1;
 	}
 }
+*/
 
 void APlayerEntity::ADS()
 {
 	Aiming = true;
+	SwayBase = 0.1;
+	SwayMultiplier = 10;
+	RotMultiplier = 1;
+	LookSensitivity = AdsSensitivity;
 }
 
 void APlayerEntity::UnADS()
 {
 	Aiming = false;
+	SwayBase = 0.7;
+	SwayMultiplier = 3;
+	RotMultiplier = 3;
+	LookSensitivity = 1;
+}
+
+void APlayerEntity::LookUp(float Value)
+{
+	AddControllerPitchInput(Value * LookSensitivity);
+}
+
+void APlayerEntity::LookRight(float Value)
+{
+	AddControllerYawInput(Value * LookSensitivity);
 }
 
 void APlayerEntity::SwapWeaponUp()
@@ -105,17 +126,11 @@ void APlayerEntity::Tick(float DeltaTime)
 	if (!Aiming)
 	{
 		WeaponOffsetTarget.Z += WalkDropValue / 2;
-		RotMultiplier = 3;
-		SwayBase = 0.7;
-		SwayMultiplier = 3;
 		HorizontalOffsetMultiplier = 2;
 	}
 	else
 	{
 		WeaponOffsetTarget = FVector(CurrentWeaponInfo->WeaponOffset.X, 0, 0);
-		RotMultiplier = 1;
-		SwayBase = 0.1;
-		SwayMultiplier = 10;
 		HorizontalOffsetMultiplier = 0;
 	}
 
@@ -152,15 +167,20 @@ void APlayerEntity::SetupPlayerInputComponent(UInputComponent * PlayerInputCompo
 	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerEntity::MoveRight);
 
 	//Mouse Look
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("LookRight", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("LookUp", this, &APlayerEntity::LookUp);
+	PlayerInputComponent->BindAxis("LookRight", this, &APlayerEntity::LookRight);
 
 	//Jump
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
+	//Crouch
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AGameEntity::StartCrouch);
+	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &AGameEntity::EndCrouch);
+
 	//Shoot
-	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &APlayerEntity::Shoot);
+	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &AGameEntity::Shoot);
+	PlayerInputComponent->BindAction("Shoot", IE_Released, this, &AGameEntity::UnShoot);
 
 	//Aim and release aim
 	PlayerInputComponent->BindAction("ADS", IE_Pressed, this, &APlayerEntity::ADS);

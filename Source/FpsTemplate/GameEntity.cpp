@@ -28,6 +28,10 @@ AGameEntity::AGameEntity()
 	AudioSource = CreateDefaultSubobject<UAudioComponent>("Audio Source");
 	AudioSource->SetupAttachment(ViewModel);
 	AudioSource->bAutoActivate = false;
+	AudioSource->bOverrideAttenuation = true;
+
+	//Weapon Inventory Init
+	WeaponInventory.SetNum(C_LENGTH);
 }
 
 // Called when the game starts or when spawned
@@ -43,14 +47,23 @@ void AGameEntity::PostInitializeComponents()
 
 	if (CurrentWeapon)
 	{
+
 		CurrentWeaponInfo = CurrentWeapon.GetDefaultObject();
 
 		ViewModel->SetStaticMesh(CurrentWeaponInfo->WeaponModel);
 		ViewModel->SetRelativeLocation(CurrentWeaponInfo->WeaponOffset);
 
 		//Weapon Data Set
-		WeaponInventory[CurrentWeaponInfo->WeaponType] = true;
-		Magazine[CurrentWeaponInfo->WeaponType] = CurrentWeaponInfo->MagSize;
+		//WeaponInventory[CurrentWeaponInfo->WeaponType] = ;
+		//Magazine[CurrentWeaponInfo->WeaponType] = CurrentWeaponInfo->MagSize;
+		for (int i = 0; i < EWeaponCategory::C_LENGTH; i++)
+		{
+			if (WeaponInventory[i] != NULL)
+			{
+				Magazine[i] = WeaponInventory[i].GetDefaultObject()->MagSize;
+				GLog->Log("E");
+			}
+		}
 		
 		if (CurrentWeaponInfo->ShellEjectParticle)
 		{
@@ -98,13 +111,51 @@ void AGameEntity::UnShoot()
 	Firing = false;
 }
 
+void AGameEntity::EquipWeapon(int numberToLoad)
+{
+	AudioSource->SetActive(false);
+	CurrentWeaponInfo = WeaponInventory[numberToLoad].GetDefaultObject();
+
+	ViewModel->SetStaticMesh(CurrentWeaponInfo->WeaponModel);
+	ViewModel->SetRelativeLocation(CurrentWeaponInfo->WeaponOffset);
+
+	//Weapon Data Set
+	//Magazine[CurrentWeaponInfo->WeaponType] = CurrentWeaponInfo->MagSize;
+
+	if (CurrentWeaponInfo->ShellEjectParticle)
+	{
+		if (ViewModel->DoesSocketExist("ShellParticle"))
+		{
+			ShellParticleBoi->SetTemplate(CurrentWeaponInfo->ShellEjectParticle);
+			ShellParticleBoi->SetWorldLocation(ViewModel->GetSocketLocation("ShellParticle"));
+			ShellParticleBoi->SetWorldRotation(ViewModel->GetSocketRotation("ShellParticle"));
+			ShellParticleBoi->SetActive(false);
+			GLog->Log("Shell Socket Found");
+		}
+	}
+	if (CurrentWeaponInfo->MuzzleFlashParticle)
+	{
+		if (ViewModel->DoesSocketExist("Muzzle"))
+		{
+			MuzzleParticleBoi->SetTemplate(CurrentWeaponInfo->MuzzleFlashParticle);
+			MuzzleParticleBoi->SetWorldLocation(ViewModel->GetSocketLocation("Muzzle"));
+			MuzzleParticleBoi->SetWorldRotation(ViewModel->GetSocketRotation("Muzzle"));
+			MuzzleParticleBoi->SetActive(false);
+			GLog->Log("Muzzle Socket Found");
+		}
+	}
+
+	//Audio
+	AudioSource->SetSound(CurrentWeaponInfo->GunshotSound);
+}
+
 void AGameEntity::Fire()
 {
-	if (Magazine[CurrentWeaponInfo->WeaponType] > 0)
+	if (Magazine[CurrentWeaponInfo->WeaponCategory] > 0)
 	{
 		ShootRaycast();
 		PlayEffects();
-		Magazine[CurrentWeaponInfo->WeaponType] = Magazine[CurrentWeaponInfo->WeaponType] - 1;
+		Magazine[CurrentWeaponInfo->WeaponCategory] = Magazine[CurrentWeaponInfo->WeaponCategory] - 1;
 		float RecoilUP = FMath::FRandRange(CurrentWeaponInfo->VerticalRecoil / 2, CurrentWeaponInfo->VerticalRecoil) * RecoilMultiplier;
 		float RecoilSIDE = FMath::FRandRange(-CurrentWeaponInfo->HorizontalRecoil, CurrentWeaponInfo->HorizontalRecoil) * RecoilMultiplier;
 		RecoilRotationTarget += FRotator(RecoilUP, RecoilSIDE, 0);

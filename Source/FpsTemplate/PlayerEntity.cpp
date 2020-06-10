@@ -72,7 +72,7 @@ void APlayerEntity::LookRight(float Value)
 
 void APlayerEntity::SwapWeaponUp()
 {
-
+	int currentWeapon = CurrentWeaponInfo->WeaponType;
 }
 
 void APlayerEntity::SwapWeaponDown()
@@ -80,11 +80,23 @@ void APlayerEntity::SwapWeaponDown()
 
 }
 
-void APlayerEntity::SwapWeaponNumber(float value)
+void APlayerEntity::SwapWeaponNumber()
 {
+	int weaponSwitch = GetInputAxisValue("SwapWeaponValue");
+	if (weaponSwitch < WeaponInventory.Num())
+	{
+		if (WeaponInventory[weaponSwitch] != NULL)
+		{
+			EquipWeapon(weaponSwitch);
+			return;
+		}
+	}
 
 }
 
+void APlayerEntity::hehehhe(float value)
+{
+}
 
 
 // Called every frame
@@ -124,7 +136,7 @@ void APlayerEntity::Tick(float DeltaTime)
 
 	FVector WeaponOffsetTarget = CurrentWeaponInfo->WeaponOffset;
 
-	//If aiming, move weapon to aim position and reduce sway
+	//If aiming, move weapon to aim position
 	if (!Aiming)
 	{
 		WeaponOffsetTarget.Z += WalkDropValue / 2;
@@ -202,5 +214,6 @@ void APlayerEntity::SetupPlayerInputComponent(UInputComponent * PlayerInputCompo
 	PlayerInputComponent->BindAction("SwapWeaponUp", IE_Pressed, this, &APlayerEntity::SwapWeaponUp);
 	PlayerInputComponent->BindAction("SwapWeaponDown", IE_Pressed, this, &APlayerEntity::SwapWeaponDown);
 
-	PlayerInputComponent->BindAxis("SwapWeaponValue", this, &APlayerEntity::SwapWeaponNumber);
+	PlayerInputComponent->BindAction("SwapWeaponKey", IE_Pressed, this, &APlayerEntity::SwapWeaponNumber);
+	PlayerInputComponent->BindAxis("SwapWeaponValue", this, &APlayerEntity::hehehhe);
 }

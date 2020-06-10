@@ -90,6 +90,12 @@ public:
 		float BackRecoil;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recoil")
+		float UpRecoil;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recoil")
+		float RecoilSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recoil")
 		TSubclassOf<UCameraShake> CameraShake;
 
 

@@ -33,7 +33,8 @@ protected:
 
 	void SwapWeaponUp();
 	void SwapWeaponDown();
-	void SwapWeaponNumber(float value);
+	void SwapWeaponNumber();
+	void hehehhe(float value);
 
 	UCameraComponent* MainCamera;
 

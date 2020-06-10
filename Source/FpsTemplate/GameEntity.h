@@ -24,10 +24,6 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
 
-	UWeaponData* CurrentWeaponInstance;
-
-	UFpsGameInstance* InstanceBoi;
-
 
 	virtual void ShootRaycast();
 	virtual void PlayEffects();
@@ -47,9 +43,9 @@ protected:
 	float AdsSensitivity = 0.5f;
 
 	int AmmoPool[A_LENGTH];
-	int Magazine[W_LENGTH];
-	bool WeaponInventory[W_LENGTH];
-
+	int Magazine[C_LENGTH];
+	//bool WeaponInventory[W_LENGTH];
+	//TArray<TSubclassOf<UWeaponData>> WeaponInventory;
 
 	//Stats
 	int health = 100;
@@ -63,11 +59,20 @@ public:
 	virtual void EndCrouch();
 	virtual void Shoot();
 	virtual void UnShoot();
+	virtual void EquipWeapon(int numberToLoad);
 
 	virtual void PickupAmmo(EAmmoType AmmoType, int Amount);
 
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	//TSubclassOf<UWeaponData> CurrentWeapon;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TEnumAsByte<EWeaponCategory> CurrentWeaponCategory;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<UWeaponData> CurrentWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<TSubclassOf<UWeaponData>> WeaponInventory;
 
 	UWeaponData* CurrentWeaponInfo;
 

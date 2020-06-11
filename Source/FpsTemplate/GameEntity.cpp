@@ -199,7 +199,7 @@ void AGameEntity::ShootRaycast()
 		if (ObjectHit)
 		{
 			GLog->Log("Hit Object");
-			ObjectHit->Shot();
+			ObjectHit->Shot(hitBoi);
 			return;
 		}
 	}

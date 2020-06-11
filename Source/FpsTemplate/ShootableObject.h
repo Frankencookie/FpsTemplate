@@ -24,6 +24,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Main Bois")
-	void Shot();
+	void Shot(FHitResult Hit);
 	
 };

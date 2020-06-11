@@ -8,6 +8,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "FpsGameInstance.h"
 #include "Components/AudioComponent.h"
+#include "ShootableObject.h"
 #include "GameEntity.generated.h"
 
 UCLASS()

@@ -192,6 +192,15 @@ void AGameEntity::ShootRaycast()
 		{
 			GLog->Log("Hit Entity");
 			EntityHit->DamageEntity(100);
+			return;
+		}
+		//Test if it is a shootable object
+		AShootableObject* ObjectHit = Cast<AShootableObject>(hitBoi.Actor);
+		if (ObjectHit)
+		{
+			GLog->Log("Hit Object");
+			ObjectHit->Shot();
+			return;
 		}
 	}
 }

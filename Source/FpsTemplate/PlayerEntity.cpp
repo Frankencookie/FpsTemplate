@@ -159,7 +159,7 @@ void APlayerEntity::Tick(float DeltaTime)
 	WeaponOffsetFinal += SwayValue * (SwayBase + -WalkDropValue / SwayMultiplier);
 
 	//Blend X axis recoil
-	RecoilXTarget = FMath::VInterpTo(RecoilXTarget, FVector(0, 0, 0), DeltaTime, RecoilSpeed);
+	RecoilXTarget = FMath::VInterpTo(RecoilXTarget, FVector(0, 0, 0), DeltaTime, CurrentWeaponInfo->RecoilSpeed);
 	//Add to OffsetValue
 	WeaponOffsetFinal += RecoilXTarget;
 
@@ -173,9 +173,9 @@ void APlayerEntity::Tick(float DeltaTime)
 	RotationOffset = FMath::RInterpTo(RotationOffset, RotationOffsetTarget, DeltaTime, RotInterpSpeed);
 
 	//Recoil Rotation
-	RecoilRotationTarget = FMath::RInterpTo(RecoilRotationTarget, FRotator(0, 0, 0), DeltaTime, RecoilSpeed);
+	RecoilRotationTarget = FMath::RInterpTo(RecoilRotationTarget, FRotator(0, 0, 0), DeltaTime, CurrentWeaponInfo->RecoilSpeed);
 	FRotator RecoilRotBlend = FRotator(0, 0, 0);
-	RecoilRotBlend = FMath::RInterpTo(RecoilRotBlend, RecoilRotationTarget, DeltaTime, RecoilSpeed);
+	RecoilRotBlend = FMath::RInterpTo(RecoilRotBlend, RecoilRotationTarget, DeltaTime, CurrentWeaponInfo->RecoilSpeed);
 
 	RotationOffset += RecoilRotBlend;
 

@@ -9,6 +9,7 @@
 #include "FpsGameInstance.h"
 #include "Components/AudioComponent.h"
 #include "ShootableObject.h"
+#include "FpsTemplateGameModeBase.h"
 #include "GameEntity.generated.h"
 
 UCLASS()
@@ -25,10 +26,11 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
 
-
 	virtual void ShootRaycast();
 	virtual void PlayEffects();
 	virtual void Fire();
+	UFUNCTION(BlueprintCallable)
+	void ReloadValues();
 
 	bool Aiming = false;
 	bool Firing = false;
@@ -43,7 +45,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float AdsSensitivity = 0.5f;
 
-	int AmmoPool[A_LENGTH];
+
+	AFpsTemplateGameModeBase* GameMode;
+	EWeaponAmmoMode AmmoMode;
+	TArray<int> AmmoPool;
+	//int AmmoPool[A_LENGTH];
 	int Magazine[C_LENGTH];
 	//bool WeaponInventory[W_LENGTH];
 	//TArray<TSubclassOf<UWeaponData>> WeaponInventory;
@@ -62,7 +68,8 @@ public:
 	virtual void UnShoot();
 	virtual void EquipWeapon(int numberToLoad);
 
-	virtual void PickupAmmo(EAmmoType AmmoType, int Amount);
+	UFUNCTION(BlueprintCallable)
+	virtual void PickupAmmo(EWeaponType AmmoType, int Amount);
 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	//TSubclassOf<UWeaponData> CurrentWeapon;

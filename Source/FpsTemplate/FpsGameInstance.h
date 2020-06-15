@@ -18,7 +18,6 @@ class FPSTEMPLATE_API UFpsGameInstance : public UGameInstance
 	
 	
 public:
-	UPROPERTY(EditAnywhere)
-	TArray<TSubclassOf<UWeaponData>> WeaponList;
+
 	
 };

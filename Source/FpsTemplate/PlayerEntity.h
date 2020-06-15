@@ -34,6 +34,10 @@ protected:
 	void SwapWeaponUp();
 	void SwapWeaponDown();
 	void SwapWeaponNumber();
+
+	void Reload();
+
+	//Weapon switch value getter
 	void hehehhe(float value);
 
 	UCameraComponent* MainCamera;

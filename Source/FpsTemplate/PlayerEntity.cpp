@@ -94,6 +94,22 @@ void APlayerEntity::SwapWeaponNumber()
 
 }
 
+void APlayerEntity::Reload()
+{
+	if (AmmoPool[CurrentWeaponInfo->WeaponType] < 1)
+	{
+		GLog->Log("Cannot Reload, Not enough Ammo");
+		return;
+	}
+	else
+	{
+		GLog->Log("Reloading");
+		ReloadValues();
+		return;
+	}
+
+}
+
 void APlayerEntity::hehehhe(float value)
 {
 }
@@ -216,4 +232,7 @@ void APlayerEntity::SetupPlayerInputComponent(UInputComponent * PlayerInputCompo
 
 	PlayerInputComponent->BindAction("SwapWeaponKey", IE_Pressed, this, &APlayerEntity::SwapWeaponNumber);
 	PlayerInputComponent->BindAxis("SwapWeaponValue", this, &APlayerEntity::hehehhe);
+
+	//Reload
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &APlayerEntity::Reload);
 }

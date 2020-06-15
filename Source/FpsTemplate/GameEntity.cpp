@@ -13,6 +13,7 @@ AGameEntity::AGameEntity()
 	//ViewModel->AddRelativeLocation(FVector(26, 15, 60));
 	ViewModel->SetupAttachment(RootComponent);
 	ViewModel->bCastDynamicShadow = false;
+	ViewModel->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	//Shell eject particle system
 	ShellParticleBoi = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Shell Eject Particle System"));
@@ -32,12 +33,45 @@ AGameEntity::AGameEntity()
 
 	//Weapon Inventory Init
 	WeaponInventory.SetNum(C_LENGTH);
+
 }
 
 // Called when the game starts or when spawned
 void AGameEntity::BeginPlay()
 {
 	Super::BeginPlay();
+
+	GameMode = Cast<AFpsTemplateGameModeBase>(GetWorld()->GetAuthGameMode());
+	AmmoMode = GameMode->GetWeaponAmmoMode();
+	if (!GameMode)
+	{
+		GLog->Log("Gamemode not found, please cry");
+	}
+	else
+	{
+		GLog->Log("Gamemode found");
+
+		//Set ammo array to size of ammo mode
+		switch (AmmoMode)
+		{
+		case WAM_CALIBRE:
+			AmmoPool.SetNum(A_LENGTH);
+			break;
+		case WAM_CATEGORY:
+			AmmoPool.SetNum(C_LENGTH);
+			break;
+		case WAM_WEAPONEXCLUSIVE:
+			AmmoPool.SetNum(W_LENGTH);
+			for (int i = 0; i < W_LENGTH; i++)
+			{
+				AmmoPool[i] = 30;
+			}
+			break;
+		}
+
+		GLog->Log(FString::FromInt(AmmoPool.Num()));
+	}
+
 	
 }
 
@@ -92,7 +126,6 @@ void AGameEntity::PostInitializeComponents()
 		AudioSource->SetSound(CurrentWeaponInfo->GunshotSound);
 		
 	}
-
 
 }
 
@@ -164,6 +197,38 @@ void AGameEntity::Fire()
 
 		//Camera Shake
 		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(CurrentWeaponInfo->CameraShake, 1.0f);
+	}
+}
+
+//Update magazine ammo and subtract from pool
+void AGameEntity::ReloadValues()
+{
+	int magSize = CurrentWeaponInfo->MagSize;
+	switch (AmmoMode)
+	{
+	case WAM_WEAPONEXCLUSIVE:
+	{
+		EWeaponType type = CurrentWeaponInfo->WeaponType;
+		EWeaponCategory cat = CurrentWeaponInfo->WeaponCategory;
+		int x = CurrentWeaponInfo->MagSize - Magazine[type];
+		if (x < AmmoPool[type])
+		{
+			GLog->Log("Enough ammo for full reload");
+			Magazine[cat] = magSize;
+			AmmoPool[type] -= x;
+		}
+		else
+		{
+			GLog->Log("Not enough for a full reload, doing a partial");
+			Magazine[cat] += AmmoPool[type];
+			AmmoPool[type] = 0;
+		}
+	}
+		break;
+	case WAM_CALIBRE:
+		break;
+	case WAM_CATEGORY:
+		break;
 	}
 }
 
@@ -246,7 +311,7 @@ void AGameEntity::Tick(float DeltaTime)
 	}
 }
 
-void AGameEntity::PickupAmmo(EAmmoType AmmoType, int Amount)
+void AGameEntity::PickupAmmo(EWeaponType AmmoType, int Amount)
 {
 	AmmoPool[AmmoType] += Amount;
 }

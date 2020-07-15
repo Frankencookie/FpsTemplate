@@ -6,6 +6,7 @@
 #include "GameEntity.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "FPS_UI_Base.h"
 #include "PlayerEntity.generated.h"
 
 /**
@@ -20,12 +21,22 @@ public:
 	APlayerEntity();
 	
 protected:
+
+	virtual void BeginPlay() override;
 	UCharacterMovementComponent* MovementBoi;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UFPS_UI_Base> PlayerUI;
+
+	UFPS_UI_Base* PlayerUIRef;
+
+	void CreateUI();
 
 	void MoveForward(float value);
 	void MoveRight(float value);
 
 	//virtual void Shoot() override;
+	virtual void Fire() override;
 	void ADS();
 	void UnADS();
 	void LookUp(float Value);
@@ -50,7 +61,7 @@ protected:
 	float SwayBase = 1;
 	float SwayMultiplier = 3;
 
-	float HorizontalOffsetMultiplier = 2;
+	float HorizontalOffsetMultiplier = 3;
 
 	//Recoil
 	//FVector RecoilClimbTarget = FVector(0, 0, 0);
@@ -62,10 +73,24 @@ protected:
 	float RotInterpSpeed = 5;
 	float RotMultiplier = 3;
 
+	UFUNCTION(BlueprintCallable)
+	virtual void ReloadValues();
+
+	UPROPERTY(EditAnywhere)
+	float JumpWeaponOffset = 8;
+
 public:
 
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCosmetic, Category = "Super Important UI Bois")
+	void UpdateUI_Fire(int newAmmo);
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCosmetic, Category = "Super Important UI Bois")
+	void UpdateUI_Reload(int newAmmo, int newReserve);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void PickupAmmo(EWeaponType AmmoType, int Amount);
 };

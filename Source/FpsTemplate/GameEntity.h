@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "WeaponData.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "FpsGameInstance.h"
 #include "Components/AudioComponent.h"
 #include "ShootableObject.h"
@@ -30,15 +31,21 @@ protected:
 	virtual void PlayEffects();
 	virtual void Fire();
 	UFUNCTION(BlueprintCallable)
-	void ReloadValues();
+	virtual void ReloadValues();
 
 	bool Aiming = false;
 	bool Firing = false;
+	bool Reloading = false;
+
+	float ReloadDoneTime = 0;
 	float NextShotTime = 0;
 	float CurrentShotTime = 0;
 	FRotator RecoilRotationTarget = FRotator(0, 0, 0);
 	FVector RecoilXTarget = FVector(0, 0, 0);
+	FVector RecoilZTarget = FVector(0, 0, 0);
+	FVector RecoilZBlend = FVector(0, 0, 0);
 	float RecoilMultiplier = 3;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float LookSensitivity = 1;
@@ -48,6 +55,7 @@ protected:
 
 	AFpsTemplateGameModeBase* GameMode;
 	EWeaponAmmoMode AmmoMode;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<int> AmmoPool;
 	//int AmmoPool[A_LENGTH];
 	int Magazine[C_LENGTH];
@@ -71,6 +79,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void PickupAmmo(EWeaponType AmmoType, int Amount);
 
+	UFUNCTION(BlueprintCallable)
+	int GetCurrentAmmo();
+
+	UFUNCTION(BlueprintCallable)
+	int GetReserveAmmo();
+
+	UFUNCTION(BlueprintCallable)
+	FString GetWeaponName();
+
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	//TSubclassOf<UWeaponData> CurrentWeapon;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -84,8 +101,14 @@ public:
 
 	UWeaponData* CurrentWeaponInfo;
 
+	//Static Mesh Viewmodel. Could be used for world model
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* ViewModel;
+
+	//Skeletal Mesh Viewmodel
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USkeletalMeshComponent* SkeletalViewModel;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UParticleSystemComponent* ShellParticleBoi;

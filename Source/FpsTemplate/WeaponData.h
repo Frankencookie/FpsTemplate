@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "Engine/StaticMesh.h"
+#include "Engine/SkeletalMesh.h"
 #include "Curves/CurveVector.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Sound/SoundBase.h"
@@ -52,7 +53,7 @@ class FPSTEMPLATE_API UWeaponData : public UObject
 	GENERATED_BODY()
 	
 public:
-
+	//BASICS
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TEnumAsByte<EWeaponType> WeaponType;
 
@@ -61,6 +62,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TEnumAsByte<EAmmoType> AmmoType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FString WeaponName;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int MagSize;
@@ -73,6 +77,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UStaticMesh* WeaponModel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		USkeletalMesh* SkeletalModel;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector WeaponOffset = FVector(26, 15, -5);
@@ -80,18 +87,26 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float Range = 6000;
 
+
+	//RECOIL
+
+	//How much the weapon should rotate Horizontally
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recoil")
 		float HorizontalRecoil;
 
+	//How much the weapon should rotate Vertically
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recoil")
 		float VerticalRecoil;
 
+	//How far the weapon should move back upon firing
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recoil")
 		float BackRecoil;
 
+	//How far the weapon should move up upon firing
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recoil")
 		float UpRecoil;
 
+	//How quickly the weapon should recoil, and recover from recoil
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Recoil")
 		float RecoilSpeed;
 
@@ -103,13 +118,26 @@ public:
 		UCurveVector* IdleSwayCurve;
 
 
+
+	//This will use socket locations from static mesh instead of skeletal
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Particle Systems")
+		bool UseStaticSocket = false;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Particle Systems")
 		UParticleSystem* ShellEjectParticle;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Particle Systems")
 		UParticleSystem* MuzzleFlashParticle;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
 		USoundBase* GunshotSound;
+
+	//ANIMATION
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+		UAnimationAsset* ReloadAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+		float ReloadValuesTime = 1;
+
 	
 };

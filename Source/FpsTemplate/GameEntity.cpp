@@ -15,6 +15,15 @@ AGameEntity::AGameEntity()
 	ViewModel->bCastDynamicShadow = false;
 	ViewModel->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	SkeletalViewModel = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Animated ViewModel"));
+	SkeletalViewModel->SetupAttachment(ViewModel);
+	SkeletalViewModel->SetRelativeLocation(FVector(0, 0, 0));
+	SkeletalViewModel->bCastDynamicShadow = false;
+	SkeletalViewModel->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SkeletalViewModel->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+	SkeletalViewModel->AnimationData.bSavedLooping = false;
+	SkeletalViewModel->AnimationData.bSavedPlaying = true;
+
 	//Shell eject particle system
 	ShellParticleBoi = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Shell Eject Particle System"));
 	ShellParticleBoi->SetupAttachment(ViewModel);
@@ -72,7 +81,6 @@ void AGameEntity::BeginPlay()
 		GLog->Log(FString::FromInt(AmmoPool.Num()));
 	}
 
-	
 }
 
 void AGameEntity::PostInitializeComponents()
@@ -83,9 +91,15 @@ void AGameEntity::PostInitializeComponents()
 	{
 
 		CurrentWeaponInfo = CurrentWeapon.GetDefaultObject();
+		if (CurrentWeaponInfo->SkeletalModel)
+		{
+			SkeletalViewModel->SetSkeletalMesh(CurrentWeaponInfo->SkeletalModel);
+		}
 
 		ViewModel->SetStaticMesh(CurrentWeaponInfo->WeaponModel);
 		ViewModel->SetRelativeLocation(CurrentWeaponInfo->WeaponOffset);
+
+
 
 		//Weapon Data Set
 		//WeaponInventory[CurrentWeaponInfo->WeaponType] = ;
@@ -101,30 +115,69 @@ void AGameEntity::PostInitializeComponents()
 		
 		if (CurrentWeaponInfo->ShellEjectParticle)
 		{
-			if (ViewModel->DoesSocketExist("ShellParticle"))
+			//Skeletal or static, skeletal priority
+			if (SkeletalViewModel->SkeletalMesh && !CurrentWeaponInfo->UseStaticSocket)
+			{
+				if (SkeletalViewModel->DoesSocketExist("ShellParticle"))
+				{
+					ShellParticleBoi->SetTemplate(CurrentWeaponInfo->ShellEjectParticle);
+					ShellParticleBoi->SetWorldLocation(SkeletalViewModel->GetSocketLocation("ShellParticle"));
+					ShellParticleBoi->SetWorldRotation(SkeletalViewModel->GetSocketRotation("ShellParticle"));
+					ShellParticleBoi->SetActive(false);
+					GLog->Log("SKELETAL - Shell Socket Found");
+				}
+			}
+			else if (ViewModel->DoesSocketExist("ShellParticle"))
 			{
 				ShellParticleBoi->SetTemplate(CurrentWeaponInfo->ShellEjectParticle);
 				ShellParticleBoi->SetWorldLocation(ViewModel->GetSocketLocation("ShellParticle"));
 				ShellParticleBoi->SetWorldRotation(ViewModel->GetSocketRotation("ShellParticle"));
 				ShellParticleBoi->SetActive(false);
-				GLog->Log("Shell Socket Found");
+				GLog->Log("STATIC - Shell Socket Found");
 			}
 		}
 		if (CurrentWeaponInfo->MuzzleFlashParticle)
 		{
-			if (ViewModel->DoesSocketExist("Muzzle"))
+			//Skeletal or static, skeletal priority
+			if (SkeletalViewModel->SkeletalMesh && !CurrentWeaponInfo->UseStaticSocket)
+			{
+				if (SkeletalViewModel->DoesSocketExist("Muzzle"))
+				{
+					MuzzleParticleBoi->SetTemplate(CurrentWeaponInfo->MuzzleFlashParticle);
+					MuzzleParticleBoi->SetWorldLocation(SkeletalViewModel->GetSocketLocation("Muzzle"));
+					MuzzleParticleBoi->SetWorldRotation(SkeletalViewModel->GetSocketRotation("Muzzle"));
+					MuzzleParticleBoi->SetActive(false);
+					GLog->Log("SKELETAL - Muzzle Socket Found");
+				}
+			}
+			else if (ViewModel->DoesSocketExist("Muzzle"))
 			{
 				MuzzleParticleBoi->SetTemplate(CurrentWeaponInfo->MuzzleFlashParticle);
 				MuzzleParticleBoi->SetWorldLocation(ViewModel->GetSocketLocation("Muzzle"));
 				MuzzleParticleBoi->SetWorldRotation(ViewModel->GetSocketRotation("Muzzle"));
 				MuzzleParticleBoi->SetActive(false);
-				GLog->Log("Muzzle Socket Found");
+				GLog->Log("STATIC -	Muzzle Socket Found");
 			}
+		}
+
+		if (SkeletalViewModel->SkeletalMesh && CurrentWeaponInfo->ReloadAnimation)
+		{
+			/*
+			SkeletalViewModel->AnimationData.AnimToPlay = CurrentWeaponInfo->ReloadAnimation;
+			SkeletalViewModel->AnimationData.bSavedPlaying = false;
+			SkeletalViewModel->AnimationData.SavedPosition = 0;
+			*/
+			SkeletalViewModel->PlayAnimation(CurrentWeaponInfo->ReloadAnimation, false);
+			SkeletalViewModel->Stop();
 		}
 
 		//Audio
 		AudioSource->SetSound(CurrentWeaponInfo->GunshotSound);
 		
+		if (SkeletalViewModel->SkeletalMesh)
+		{
+			ViewModel->SetVisibility(false);
+		}
 	}
 
 }
@@ -148,6 +201,10 @@ void AGameEntity::EquipWeapon(int numberToLoad)
 {
 	AudioSource->SetActive(false);
 	CurrentWeaponInfo = WeaponInventory[numberToLoad].GetDefaultObject();
+	if (CurrentWeaponInfo->SkeletalModel)
+	{
+		SkeletalViewModel->SetSkeletalMesh(CurrentWeaponInfo->SkeletalModel);
+	}
 
 	ViewModel->SetStaticMesh(CurrentWeaponInfo->WeaponModel);
 	ViewModel->SetRelativeLocation(CurrentWeaponInfo->WeaponOffset);
@@ -157,29 +214,63 @@ void AGameEntity::EquipWeapon(int numberToLoad)
 
 	if (CurrentWeaponInfo->ShellEjectParticle)
 	{
-		if (ViewModel->DoesSocketExist("ShellParticle"))
+		//Skeletal or static, skeletal priority
+		if (SkeletalViewModel->SkeletalMesh && !CurrentWeaponInfo->UseStaticSocket)
+		{
+			if (SkeletalViewModel->DoesSocketExist("ShellParticle"))
+			{
+				ShellParticleBoi->SetTemplate(CurrentWeaponInfo->ShellEjectParticle);
+				ShellParticleBoi->SetWorldLocation(SkeletalViewModel->GetSocketLocation("ShellParticle"));
+				ShellParticleBoi->SetWorldRotation(SkeletalViewModel->GetSocketRotation("ShellParticle"));
+				ShellParticleBoi->SetActive(false);
+				GLog->Log("SKELETAL - Shell Socket Found");
+			}
+		}
+		else if (ViewModel->DoesSocketExist("ShellParticle"))
 		{
 			ShellParticleBoi->SetTemplate(CurrentWeaponInfo->ShellEjectParticle);
 			ShellParticleBoi->SetWorldLocation(ViewModel->GetSocketLocation("ShellParticle"));
 			ShellParticleBoi->SetWorldRotation(ViewModel->GetSocketRotation("ShellParticle"));
 			ShellParticleBoi->SetActive(false);
-			GLog->Log("Shell Socket Found");
+			GLog->Log("STATIC - Shell Socket Found");
 		}
 	}
 	if (CurrentWeaponInfo->MuzzleFlashParticle)
 	{
-		if (ViewModel->DoesSocketExist("Muzzle"))
+		//Skeletal or static, skeletal priority
+		if (SkeletalViewModel->SkeletalMesh && !CurrentWeaponInfo->UseStaticSocket)
+		{
+			if (SkeletalViewModel->DoesSocketExist("Muzzle"))
+			{
+				MuzzleParticleBoi->SetTemplate(CurrentWeaponInfo->MuzzleFlashParticle);
+				MuzzleParticleBoi->SetWorldLocation(SkeletalViewModel->GetSocketLocation("Muzzle"));
+				MuzzleParticleBoi->SetWorldRotation(SkeletalViewModel->GetSocketRotation("Muzzle"));
+				MuzzleParticleBoi->SetActive(false);
+				GLog->Log("SKELETAL - Muzzle Socket Found");
+			}
+		}
+		else if (ViewModel->DoesSocketExist("Muzzle"))
 		{
 			MuzzleParticleBoi->SetTemplate(CurrentWeaponInfo->MuzzleFlashParticle);
 			MuzzleParticleBoi->SetWorldLocation(ViewModel->GetSocketLocation("Muzzle"));
 			MuzzleParticleBoi->SetWorldRotation(ViewModel->GetSocketRotation("Muzzle"));
 			MuzzleParticleBoi->SetActive(false);
-			GLog->Log("Muzzle Socket Found");
+			GLog->Log("STATIC -	Muzzle Socket Found");
 		}
+	}
+
+	if (SkeletalViewModel->SkeletalMesh && CurrentWeaponInfo->ReloadAnimation)
+	{
+		SkeletalViewModel->AnimationData.AnimToPlay = CurrentWeaponInfo->ReloadAnimation;
 	}
 
 	//Audio
 	AudioSource->SetSound(CurrentWeaponInfo->GunshotSound);
+
+	if (SkeletalViewModel->SkeletalMesh)
+	{
+		ViewModel->SetStaticMesh(NULL);
+	}
 }
 
 void AGameEntity::Fire()
@@ -193,8 +284,8 @@ void AGameEntity::Fire()
 		float RecoilSIDE = FMath::FRandRange(-CurrentWeaponInfo->HorizontalRecoil, CurrentWeaponInfo->HorizontalRecoil) * RecoilMultiplier;
 		RecoilRotationTarget += FRotator(RecoilUP, RecoilSIDE, 0);
 
-		RecoilXTarget += FVector(-CurrentWeaponInfo->BackRecoil, 0, 0);
-
+		RecoilXTarget += FVector(-CurrentWeaponInfo->BackRecoil, 0, CurrentWeaponInfo->UpRecoil);
+		RecoilZTarget += FVector(0, 0, CurrentWeaponInfo->UpRecoil);
 		//Camera Shake
 		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(CurrentWeaponInfo->CameraShake, 1.0f);
 	}
@@ -237,9 +328,10 @@ void AGameEntity::ShootRaycast()
 	//Set up Variables
 	FHitResult hitBoi;
 	FCollisionQueryParams CollisionParameters;
-	FVector Start = ViewModel->GetSocketLocation("Muzzle");
+	//FVector Start = ViewModel->GetSocketLocation("Muzzle");
+	//FVector End = ((ViewModel->GetForwardVector() * CurrentWeaponInfo->Range) + Start);
+	FVector Start = MuzzleParticleBoi->GetComponentLocation();
 	FVector End = ((ViewModel->GetForwardVector() * CurrentWeaponInfo->Range) + Start);
-
 	//DebugLine
 	//DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 5, 0, 1);
 
@@ -304,6 +396,19 @@ void AGameEntity::Tick(float DeltaTime)
 
 	CurrentShotTime += DeltaTime;
 
+	if (Reloading)
+	{
+		if (ReloadDoneTime < CurrentShotTime)
+		{
+			Reloading = false;
+			ReloadValues();
+		}
+		else
+		{
+			return;
+		}
+	}
+
 	if (Firing && CurrentWeaponInfo->Auto && CurrentShotTime > NextShotTime)
 	{
 		Fire();
@@ -314,6 +419,21 @@ void AGameEntity::Tick(float DeltaTime)
 void AGameEntity::PickupAmmo(EWeaponType AmmoType, int Amount)
 {
 	AmmoPool[AmmoType] += Amount;
+}
+
+int AGameEntity::GetCurrentAmmo()
+{
+	return 0;
+}
+
+int AGameEntity::GetReserveAmmo()
+{
+	return 0;
+}
+
+FString AGameEntity::GetWeaponName()
+{
+	return CurrentWeaponInfo->WeaponName;
 }
 
 void AGameEntity::DamageEntity(int amount)

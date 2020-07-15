@@ -10,10 +10,23 @@ APlayerEntity::APlayerEntity()
 	MainCamera->bUsePawnControlRotation = true;
 
 	ViewModel->SetupAttachment(MainCamera);
+	//SkeletalViewModel->SetupAttachment(MainCamera);
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 
 	//MovementBoi = GetCharacterMovement();
 	//MovementBoi->MaxAcceleration = 4096;
+	SkeletalViewModel->SetRelativeLocation(FVector(0, 0, 0));
+}
+
+void APlayerEntity::BeginPlay()
+{
+	Super::BeginPlay();
+	CreateUI();
+}
+
+void APlayerEntity::CreateUI()
+{
+
 }
 
 //Forward
@@ -39,6 +52,13 @@ void APlayerEntity::Shoot()
 	}
 }
 */
+
+
+void APlayerEntity::Fire()
+{
+	Super::Fire();
+	UpdateUI_Fire(Magazine[CurrentWeaponInfo->WeaponCategory]);
+}
 
 void APlayerEntity::ADS()
 {
@@ -88,6 +108,7 @@ void APlayerEntity::SwapWeaponNumber()
 		if (WeaponInventory[weaponSwitch] != NULL)
 		{
 			EquipWeapon(weaponSwitch);
+			UpdateUI_Reload(Magazine[CurrentWeaponInfo->WeaponCategory], AmmoPool[CurrentWeaponInfo->WeaponType]);
 			return;
 		}
 	}
@@ -96,6 +117,11 @@ void APlayerEntity::SwapWeaponNumber()
 
 void APlayerEntity::Reload()
 {
+	if (Reloading)
+	{
+		GLog->Log("Already Reloading");
+		return;
+	}
 	if (AmmoPool[CurrentWeaponInfo->WeaponType] < 1)
 	{
 		GLog->Log("Cannot Reload, Not enough Ammo");
@@ -104,7 +130,11 @@ void APlayerEntity::Reload()
 	else
 	{
 		GLog->Log("Reloading");
-		ReloadValues();
+		Reloading = true;
+		SkeletalViewModel->PlayAnimation(CurrentWeaponInfo->ReloadAnimation, false);
+		ReloadDoneTime = CurrentShotTime + CurrentWeaponInfo->ReloadValuesTime;
+		UpdateUI_Reload(Magazine[CurrentWeaponInfo->WeaponCategory], AmmoPool[CurrentWeaponInfo->WeaponType]);
+		//ReloadValues();
 		return;
 	}
 
@@ -114,6 +144,13 @@ void APlayerEntity::hehehhe(float value)
 {
 }
 
+
+void APlayerEntity::ReloadValues()
+{
+	Super::ReloadValues();
+
+	UpdateUI_Reload(Magazine[CurrentWeaponInfo->WeaponCategory], AmmoPool[CurrentWeaponInfo->WeaponType]);
+}
 
 // Called every frame
 void APlayerEntity::Tick(float DeltaTime)
@@ -153,7 +190,7 @@ void APlayerEntity::Tick(float DeltaTime)
 	FVector WeaponOffsetTarget = CurrentWeaponInfo->WeaponOffset;
 
 	//If aiming, move weapon to aim position
-	if (!Aiming)
+	if (!Aiming || Reloading)
 	{
 		WeaponOffsetTarget.Z += WalkDropValue / 2;
 		HorizontalOffsetMultiplier = 2;
@@ -162,6 +199,14 @@ void APlayerEntity::Tick(float DeltaTime)
 	{
 		WeaponOffsetTarget = FVector(CurrentWeaponInfo->WeaponOffset.X, 0, 0);
 		HorizontalOffsetMultiplier = 0;
+	}
+
+	//Jumping
+	if (!GetCharacterMovement()->IsMovingOnGround())
+	{
+		WeaponOffsetTarget.Z += -JumpWeaponOffset;
+		SwayValue.Z = 0;
+		SwayValue.Y = 0;
 	}
 
 	//Add Side Input
@@ -176,11 +221,17 @@ void APlayerEntity::Tick(float DeltaTime)
 
 	//Blend X axis recoil
 	RecoilXTarget = FMath::VInterpTo(RecoilXTarget, FVector(0, 0, 0), DeltaTime, CurrentWeaponInfo->RecoilSpeed);
+	//Recoil Z Blend
+	RecoilZTarget = FMath::VInterpTo(RecoilZTarget, FVector(0, 0, 0), DeltaTime, CurrentWeaponInfo->RecoilSpeed / 4);
+	RecoilZBlend = FMath::VInterpTo(RecoilZBlend, RecoilZTarget, DeltaTime, CurrentWeaponInfo->RecoilSpeed / 2);
+
 	//Add to OffsetValue
 	WeaponOffsetFinal += RecoilXTarget;
+	WeaponOffsetFinal += RecoilZBlend;
 
 	//Set Position
 	ViewModel->SetRelativeLocation(WeaponOffsetFinal);
+	//SkeletalViewModel->SetRelativeLocation(WeaponOffsetFinal);
 
 	//Rotation
 	FRotator RotationOffsetTarget = FRotator(0, 0, 0);
@@ -195,7 +246,9 @@ void APlayerEntity::Tick(float DeltaTime)
 
 	RotationOffset += RecoilRotBlend;
 
+	//Set Rotation
 	ViewModel->SetRelativeRotation(RotationOffset);
+	//SkeletalViewModel->SetRelativeRotation(RotationOffset);
 }
 
 void APlayerEntity::SetupPlayerInputComponent(UInputComponent * PlayerInputComponent)
@@ -235,4 +288,11 @@ void APlayerEntity::SetupPlayerInputComponent(UInputComponent * PlayerInputCompo
 
 	//Reload
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &APlayerEntity::Reload);
+}
+
+void APlayerEntity::PickupAmmo(EWeaponType AmmoType, int Amount)
+{
+	Super::PickupAmmo(AmmoType, Amount);
+
+	UpdateUI_Reload(Magazine[CurrentWeaponInfo->WeaponCategory], AmmoPool[CurrentWeaponInfo->WeaponType]);
 }

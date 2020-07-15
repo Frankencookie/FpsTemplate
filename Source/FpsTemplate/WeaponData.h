@@ -54,15 +54,19 @@ class FPSTEMPLATE_API UWeaponData : public UObject
 	
 public:
 	//BASICS
+	//What is this weapon?
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TEnumAsByte<EWeaponType> WeaponType;
 
+	//Category of weapon, used to control what button to press to equip weapon.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TEnumAsByte<EWeaponCategory> WeaponCategory;
 
+	//Calibre
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TEnumAsByte<EAmmoType> AmmoType;
 
+	//Used for UI
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FString WeaponName;
 	
@@ -72,6 +76,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool Auto = false;
 
+	//Delay between shots, controls rate of fire
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float Cooldown;
 	
@@ -81,9 +86,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		USkeletalMesh* SkeletalModel;
 	
+	//Where the weapon should appear on screen when not aiming.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FVector WeaponOffset = FVector(26, 15, -5);
 
+	//How far the raycast should travel before giving up
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float Range = 6000;
 
@@ -133,9 +140,11 @@ public:
 		USoundBase* GunshotSound;
 
 	//ANIMATION
+	//What animation to play on reload
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 		UAnimationAsset* ReloadAnimation;
 
+	//How long after reload is pressed should values be updated and allow player to shoot again.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 		float ReloadValuesTime = 1;
 

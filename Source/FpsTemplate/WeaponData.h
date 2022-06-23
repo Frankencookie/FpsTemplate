@@ -53,7 +53,7 @@ class FPSTEMPLATE_API UWeaponData : public UObject
 	GENERATED_BODY()
 	
 public:
-	//BASICS
+	///BASICS
 	//What is this weapon?
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TEnumAsByte<EWeaponType> WeaponType;
